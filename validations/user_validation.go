@@ -6,9 +6,15 @@ import (
 	"github.com/zakariawahyu/go-gin-jwt-clean/dto"
 )
 
-func ValidateUser(user dto.UserRegisterRequest) error {
-	return validation.ValidateStruct(&user,
-		validation.Field(&user.Name, validation.Required),
-		validation.Field(&user.Email, validation.Required, is.Email),
-		validation.Field(&user.Password, validation.Required, validation.Length(6, 0)))
+func ValidateRegister(register dto.RegisterRequest) error {
+	return validation.ValidateStruct(&register,
+		validation.Field(&register.Name, validation.Required),
+		validation.Field(&register.Email, validation.Required, is.Email),
+		validation.Field(&register.Password, validation.Required, validation.Length(6, 0)))
+}
+
+func ValidateLogin(login dto.LoginRequest) error {
+	return validation.ValidateStruct(&login,
+		validation.Field(&login.Email, validation.Required, is.Email),
+		validation.Field(&login.Password, validation.Required, validation.Length(6, 0)))
 }

@@ -14,9 +14,9 @@ type ResponsesError struct {
 	Errors  interface{} `json:"errors"`
 }
 
-func BuildResponse(status bool, message string, data interface{}) ResponsesSuccess {
+func BuildSuccessResponse(message string, data interface{}) ResponsesSuccess {
 	return ResponsesSuccess{
-		Status:  status,
+		Status:  true,
 		Message: message,
 		Data:    data,
 	}

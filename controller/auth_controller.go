@@ -10,26 +10,28 @@ import (
 
 type AuthController interface {
 	AuthRoutes(group *gin.RouterGroup)
+	Login(c *gin.Context)
 	Register(c *gin.Context)
 }
 
 type AuthControllerImpl struct {
-	userServices services.UserServices
+	authServices services.AuthServices
 }
 
-func NewAuthController(userServices services.UserServices) AuthController {
+func NewAuthController(authServices services.AuthServices) AuthController {
 	return &AuthControllerImpl{
-		userServices: userServices,
+		authServices: authServices,
 	}
 }
 
 func (authController *AuthControllerImpl) AuthRoutes(group *gin.RouterGroup) {
 	route := group.Group("/auth")
+	route.POST("/login", authController.Login)
 	route.POST("/register", authController.Register)
 }
 
 func (authController *AuthControllerImpl) Register(c *gin.Context) {
-	var registerRequest dto.UserRegisterRequest
+	var registerRequest dto.RegisterRequest
 
 	if err := c.ShouldBind(&registerRequest); err != nil {
 		res := response.BuildErrorResponse("Failed to process request", err.Error())
@@ -37,13 +39,33 @@ func (authController *AuthControllerImpl) Register(c *gin.Context) {
 		return
 	}
 
-	result, err := authController.userServices.CreateUser(registerRequest)
+	result, err := authController.authServices.RegisterUser(registerRequest)
 	if err != nil {
 		res := response.BuildErrorResponse("Cant create user", err.Error())
 		c.AbortWithStatusJSON(http.StatusInternalServerError, res)
 		return
 	}
 
-	res := response.BuildResponse(true, "Success", result)
+	res := response.BuildSuccessResponse("Success", result)
 	c.JSON(http.StatusCreated, res)
+}
+
+func (authController *AuthControllerImpl) Login(c *gin.Context) {
+	var loginRequest dto.LoginRequest
+
+	if err := c.ShouldBind(&loginRequest); err != nil {
+		res := response.BuildErrorResponse("Failed to process request", err.Error())
+		c.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	user, err := authController.authServices.VerifyCredential(loginRequest)
+	if err != nil {
+		res := response.BuildErrorResponse("Failed to login", err.Error())
+		c.AbortWithStatusJSON(http.StatusUnauthorized, res)
+		return
+	}
+
+	res := response.BuildSuccessResponse("Success", user)
+	c.JSON(http.StatusOK, res)
 }

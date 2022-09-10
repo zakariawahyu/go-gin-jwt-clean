@@ -12,8 +12,9 @@ import (
 func main() {
 	db := config.DatabaseConnection()
 	userRepository := repository.NewUserRepository(db)
-	userServices := services.NewUserServices(userRepository)
-	authController := controller.NewAuthController(userServices)
+	_ = services.NewUserServices(userRepository)
+	authServices := services.NewAuthServices(userRepository)
+	authController := controller.NewAuthController(authServices)
 
 	r := gin.Default()
 
