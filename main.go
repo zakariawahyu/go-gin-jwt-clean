@@ -13,8 +13,9 @@ func main() {
 	db := config.DatabaseConnection()
 	userRepository := repository.NewUserRepository(db)
 	_ = services.NewUserServices(userRepository)
+	jwtServices := services.NewJWTServices()
 	authServices := services.NewAuthServices(userRepository)
-	authController := controller.NewAuthController(authServices)
+	authController := controller.NewAuthController(authServices, jwtServices)
 
 	r := gin.Default()
 
