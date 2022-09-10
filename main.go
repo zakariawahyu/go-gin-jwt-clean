@@ -12,10 +12,11 @@ import (
 func main() {
 	db := config.DatabaseConnection()
 	userRepository := repository.NewUserRepository(db)
-	_ = services.NewUserServices(userRepository)
+	userServices := services.NewUserServices(userRepository)
 	jwtServices := services.NewJWTServices()
 	authServices := services.NewAuthServices(userRepository)
 	authController := controller.NewAuthController(authServices, jwtServices)
+	userController := controller.NewUserController(userServices, jwtServices)
 
 	r := gin.Default()
 
@@ -28,6 +29,7 @@ func main() {
 	// Setup Routers
 	v1 := r.Group("api/v1")
 	authController.AuthRoutes(v1)
+	userController.UserRoutes(v1)
 
 	r.Run("localhost:8081")
 }
