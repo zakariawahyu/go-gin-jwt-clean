@@ -2,28 +2,32 @@ package response
 
 import "strings"
 
-type Response struct {
+type ResponsesSuccess struct {
 	Status  bool        `json:"status"`
 	Message string      `json:"message"`
-	Errors  interface{} `json:"errors"`
 	Data    interface{} `json:"data"`
 }
 
-func BuildResponse(status bool, message string, data interface{}) Response {
-	return Response{
+type ResponsesError struct {
+	Status  bool        `json:"status"`
+	Message string      `json:"message"`
+	Errors  interface{} `json:"errors"`
+}
+
+func BuildResponse(status bool, message string, data interface{}) ResponsesSuccess {
+	return ResponsesSuccess{
 		Status:  status,
 		Message: message,
 		Data:    data,
 	}
 }
 
-func BuildErrorResponse(message string, err string, data interface{}) Response {
-	splittedError := strings.Split(err, "\n")
+func BuildErrorResponse(message string, err string) ResponsesError {
+	splittedError := strings.Split(err, "; ")
 
-	return Response{
+	return ResponsesError{
 		Status:  false,
 		Message: message,
 		Errors:  splittedError,
-		Data:    data,
 	}
 }

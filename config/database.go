@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"github.com/joho/godotenv"
+	"github.com/zakariawahyu/go-gin-jwt-clean/entity"
 	"github.com/zakariawahyu/go-gin-jwt-clean/exception"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -24,7 +25,7 @@ func DatabaseConnection() *gorm.DB {
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	exception.PanicIfNeeded(err)
 
-	//db.AutoMigrate()
+	db.AutoMigrate(&entity.User{}, &entity.Task{})
 
 	fmt.Println("Database connected")
 	return db
