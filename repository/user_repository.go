@@ -11,6 +11,7 @@ type UserRepository interface {
 	Create(user entity.User) (entity.User, error)
 	FindByEmail(email string) (entity.User, error)
 	FindById(id string) (entity.User, error)
+	Update(user entity.User) (entity.User, error)
 }
 
 type UserRepositoryImpl struct {
@@ -44,6 +45,18 @@ func (repository *UserRepositoryImpl) FindByEmail(email string) (entity.User, er
 func (repository *UserRepositoryImpl) FindById(id string) (entity.User, error) {
 	var user entity.User
 	if err := repository.db.Where("id = ?", id).Take(&user); err != nil {
+		return user, err.Error
+	}
+
+	return user, nil
+}
+
+func (repository *UserRepositoryImpl) Update(user entity.User) (entity.User, error) {
+	if user.Password != "" {
+		user.Password = hashAndSalt([]byte(user.Password))
+	}
+
+	if err := repository.db.Where("id = ?", user.ID).Updates(&user); err != nil {
 		return user, err.Error
 	}
 
