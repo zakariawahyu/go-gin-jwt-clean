@@ -2,7 +2,6 @@ package controller
 
 import (
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/zakariawahyu/go-gin-jwt-clean/common/response"
 	"github.com/zakariawahyu/go-gin-jwt-clean/dto"
@@ -37,9 +36,7 @@ func (userController *UserControllerImpl) UserRoutes(group *gin.RouterGroup) {
 }
 
 func (userController *UserControllerImpl) Profile(c *gin.Context) {
-	header := c.GetHeader("Authorization")
-	token := userController.jwtServices.ValidateToken(header, c)
-	claims := token.Claims.(jwt.MapClaims)
+	claims := userController.jwtServices.GetClaimsJWT(c)
 	id := fmt.Sprintf("%v", claims["user_id"])
 
 	user, err := userController.userServices.FindUserById(id)
@@ -61,9 +58,7 @@ func (userController *UserControllerImpl) Update(c *gin.Context) {
 		return
 	}
 
-	header := c.GetHeader("Authorization")
-	token := userController.jwtServices.ValidateToken(header, c)
-	claims := token.Claims.(jwt.MapClaims)
+	claims := userController.jwtServices.GetClaimsJWT(c)
 	id := fmt.Sprintf("%v", claims["user_id"])
 
 	_id, _ := strconv.ParseInt(id, 0, 64)

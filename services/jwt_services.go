@@ -12,6 +12,7 @@ import (
 type JWTServices interface {
 	GenerateToken(userID string) string
 	ValidateToken(tokens string, c *gin.Context) *jwt.Token
+	GetClaimsJWT(c *gin.Context) jwt.MapClaims
 }
 
 type JWTServicesImpl struct {
@@ -69,4 +70,12 @@ func (jwtServices *JWTServicesImpl) ValidateToken(tokens string, c *gin.Context)
 	}
 
 	return t
+}
+
+func (jwtServices *JWTServicesImpl) GetClaimsJWT(c *gin.Context) jwt.MapClaims {
+	header := c.GetHeader("Authorization")
+	token := jwtServices.ValidateToken(header, c)
+	claims := token.Claims.(jwt.MapClaims)
+
+	return claims
 }

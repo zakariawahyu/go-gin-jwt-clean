@@ -12,11 +12,14 @@ import (
 func main() {
 	db := config.DatabaseConnection()
 	userRepository := repository.NewUserRepository(db)
+	taskRepository := repository.NewTaskRepository(db)
 	userServices := services.NewUserServices(userRepository)
+	taskServices := services.NewTaskServices(taskRepository)
 	jwtServices := services.NewJWTServices()
 	authServices := services.NewAuthServices(userRepository)
 	authController := controller.NewAuthController(authServices, jwtServices)
 	userController := controller.NewUserController(userServices, jwtServices)
+	taskController := controller.NewTaskController(taskServices, jwtServices)
 
 	r := gin.Default()
 
@@ -30,6 +33,7 @@ func main() {
 	v1 := r.Group("api/v1")
 	authController.AuthRoutes(v1)
 	userController.UserRoutes(v1)
+	taskController.TaskRouters(v1)
 
 	r.Run("localhost:8081")
 }
