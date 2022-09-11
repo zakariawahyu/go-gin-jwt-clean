@@ -19,7 +19,7 @@ func main() {
 	authServices := services.NewAuthServices(userRepository)
 	authController := controller.NewAuthController(authServices, jwtServices)
 	userController := controller.NewUserController(userServices, jwtServices)
-	taskController := controller.NewTaskController(taskServices, jwtServices)
+	taskController := controller.NewTaskController(taskServices, jwtServices, userServices)
 
 	r := gin.Default()
 

@@ -7,6 +7,7 @@ import (
 
 type TaskRepository interface {
 	Create(task entity.Task) (entity.Task, error)
+	Update(task entity.Task) (entity.Task, error)
 }
 
 type TaskRepositoryImpl struct {
@@ -22,6 +23,17 @@ func NewTaskRepository(db *gorm.DB) TaskRepository {
 func (taskRepo *TaskRepositoryImpl) Create(task entity.Task) (entity.Task, error) {
 	if err := taskRepo.db.Create(&task).Error; err != nil {
 		return task, err
+	}
+
+	taskRepo.db.Preload("User").Find(&task)
+	return task, nil
+}
+
+func (taskRepo *TaskRepositoryImpl) Update(task entity.Task) (entity.Task, error) {
+	result := taskRepo.db.Where("id = ? AND user_id = ?", task.ID, task.UserID).Updates(&task)
+
+	if result.RowsAffected == 0 {
+		return task, result.Error
 	}
 
 	taskRepo.db.Preload("User").Find(&task)

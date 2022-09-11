@@ -11,6 +11,7 @@ import (
 
 type TaskServices interface {
 	CreateTask(taskRequest dto.CreateTaskRequest) (*response.TaskResponse, error)
+	UpdateTask(taskRequest dto.UpdateTaskRequest) (*response.TaskResponse, error)
 }
 
 type TaskServicesImpl struct {
@@ -34,6 +35,21 @@ func (taskServices *TaskServicesImpl) CreateTask(taskRequest dto.CreateTaskReque
 	}
 
 	result, err := taskServices.taskRepo.Create(task)
+	if err != nil {
+		return nil, err
+	}
+
+	res := response.NewTaskResponse(result)
+	return &res, nil
+}
+
+func (taskServices *TaskServicesImpl) UpdateTask(taskRequest dto.UpdateTaskRequest) (*response.TaskResponse, error) {
+	var task entity.Task
+	if err := smapping.FillStruct(&task, smapping.MapFields(&taskRequest)); err != nil {
+		return nil, err
+	}
+
+	result, err := taskServices.taskRepo.Update(task)
 	if err != nil {
 		return nil, err
 	}

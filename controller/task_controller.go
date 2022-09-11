@@ -14,23 +14,27 @@ import (
 type TaskController interface {
 	TaskRouters(group *gin.RouterGroup)
 	CreateTaskUser(c *gin.Context)
+	UpdateTaskUser(c *gin.Context)
 }
 
 type TaskControllerImpl struct {
 	taskServices services.TaskServices
 	jwtServices  services.JWTServices
+	userServices services.UserServices
 }
 
-func NewTaskController(taskServices services.TaskServices, jwtServices services.JWTServices) TaskController {
+func NewTaskController(taskServices services.TaskServices, jwtServices services.JWTServices, userServices services.UserServices) TaskController {
 	return &TaskControllerImpl{
 		taskServices: taskServices,
 		jwtServices:  jwtServices,
+		userServices: userServices,
 	}
 }
 
 func (taskController *TaskControllerImpl) TaskRouters(group *gin.RouterGroup) {
 	route := group.Group("/task", middleware.AuthorizeJWT(taskController.jwtServices))
 	route.POST("/", taskController.CreateTaskUser)
+	route.PUT("/:id", taskController.UpdateTaskUser)
 }
 
 func (taskController *TaskControllerImpl) CreateTaskUser(c *gin.Context) {
@@ -50,6 +54,35 @@ func (taskController *TaskControllerImpl) CreateTaskUser(c *gin.Context) {
 	result, err := taskController.taskServices.CreateTask(taskRequest)
 	if err != nil {
 		res := response.BuildErrorResponse("Cant create task", err.Error())
+		c.AbortWithStatusJSON(http.StatusInternalServerError, res)
+		return
+	}
+
+	res := response.BuildSuccessResponse("Success", result)
+	c.JSON(http.StatusOK, res)
+}
+
+func (taskController *TaskControllerImpl) UpdateTaskUser(c *gin.Context) {
+	var taskRequest dto.UpdateTaskRequest
+
+	if err := c.ShouldBind(&taskRequest); err != nil {
+		res := response.BuildErrorResponse("Failed to process request", err.Error())
+		c.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	claims := taskController.jwtServices.GetClaimsJWT(c)
+	userId := fmt.Sprintf("%v", claims["user_id"])
+	_userId, _ := strconv.ParseInt(userId, 0, 64)
+
+	taskId := c.Param("id")
+	_taskId, _ := strconv.ParseInt(taskId, 0, 64)
+
+	taskRequest.ID = _taskId
+	taskRequest.UserID = _userId
+	result, err := taskController.taskServices.UpdateTask(taskRequest)
+	if err != nil {
+		res := response.BuildErrorResponse("Cant update task", err.Error())
 		c.AbortWithStatusJSON(http.StatusInternalServerError, res)
 		return
 	}
