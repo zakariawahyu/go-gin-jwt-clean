@@ -9,6 +9,8 @@ import (
 type TaskRepository interface {
 	Create(task entity.Task) (entity.Task, error)
 	Update(task entity.Task) (entity.Task, error)
+	FindById(taskId string, userId string) (entity.Task, error)
+	GetAll(userId string) ([]entity.Task, error)
 }
 
 type TaskRepositoryImpl struct {
@@ -35,6 +37,28 @@ func (taskRepo *TaskRepositoryImpl) Update(task entity.Task) (entity.Task, error
 
 	if result.RowsAffected == 0 {
 		return task, errors.New("You dont have access to update this task")
+	}
+
+	taskRepo.db.Preload("User").Find(&task)
+	return task, nil
+}
+
+func (taskRepo *TaskRepositoryImpl) FindById(taskId string, userId string) (entity.Task, error) {
+	var task entity.Task
+	result := taskRepo.db.Where("id = ? AND user_id = ?", taskId, userId).First(&task)
+
+	if result.RowsAffected == 0 {
+		return task, result.Error
+	}
+
+	taskRepo.db.Preload("User").Find(&task)
+	return task, nil
+}
+
+func (taskRepo *TaskRepositoryImpl) GetAll(userId string) ([]entity.Task, error) {
+	var task []entity.Task
+	if err := taskRepo.db.Where("user_id = ?", userId).Find(&task).Error; err != nil {
+		return task, err
 	}
 
 	taskRepo.db.Preload("User").Find(&task)
