@@ -14,6 +14,7 @@ type TaskServices interface {
 	UpdateTask(taskRequest dto.UpdateTaskRequest) (*response.TaskResponse, error)
 	FindTaskById(taskId string, userId string) (*response.TaskResponse, error)
 	GetAllTask(userId string) (*[]response.TaskResponse, error)
+	DeleteById(taskId string, userId string) (*response.TaskResponse, error)
 }
 
 type TaskServicesImpl struct {
@@ -77,5 +78,15 @@ func (taskServices *TaskServicesImpl) GetAllTask(userId string) (*[]response.Tas
 	}
 
 	res := response.NewTaskResponseArray(result)
+	return &res, nil
+}
+
+func (taskServices *TaskServicesImpl) DeleteById(taskId string, userId string) (*response.TaskResponse, error) {
+	result, err := taskServices.taskRepo.Delete(taskId, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	res := response.NewTaskResponse(result)
 	return &res, nil
 }

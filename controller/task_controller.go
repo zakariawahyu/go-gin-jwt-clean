@@ -19,6 +19,7 @@ type TaskController interface {
 	UpdateTaskUser(c *gin.Context)
 	GetTaskById(c *gin.Context)
 	GetAll(c *gin.Context)
+	DeleteTaskById(c *gin.Context)
 }
 
 type TaskControllerImpl struct {
@@ -41,6 +42,7 @@ func (taskController *TaskControllerImpl) TaskRouters(group *gin.RouterGroup) {
 	route.PUT("/:id", taskController.UpdateTaskUser)
 	route.GET("/:id", taskController.GetTaskById)
 	route.GET("/", taskController.GetAll)
+	route.DELETE("/:id", taskController.DeleteTaskById)
 }
 
 func (taskController *TaskControllerImpl) CreateTaskUser(c *gin.Context) {
@@ -125,6 +127,26 @@ func (taskController *TaskControllerImpl) GetAll(c *gin.Context) {
 	if err != nil {
 		res := response.BuildErrorResponse("Cant update task", err.Error())
 		c.AbortWithStatusJSON(http.StatusInternalServerError, res)
+		return
+	}
+
+	res := response.BuildSuccessResponse("Success", result)
+	c.JSON(http.StatusOK, res)
+}
+
+func (taskController *TaskControllerImpl) DeleteTaskById(c *gin.Context) {
+	claims := taskController.jwtServices.GetClaimsJWT(c)
+	userId := fmt.Sprintf("%v", claims["user_id"])
+	taskId := c.Param("id")
+
+	result, err := taskController.taskServices.DeleteById(taskId, userId)
+	if err != nil {
+		res := response.BuildErrorResponse("Cant get task", err.Error())
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.AbortWithStatusJSON(http.StatusNotFound, res)
+		} else {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, res)
+		}
 		return
 	}
 
