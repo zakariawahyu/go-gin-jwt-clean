@@ -12,8 +12,8 @@ import (
 
 // creating new connection database
 func DatabaseConnection() *gorm.DB {
-	errEnv := godotenv.Load()
-	exception.PanicIfNeeded(errEnv)
+	godotenv.Load()
+	//exception.PanicIfNeeded(errEnv)
 
 	dbHost := os.Getenv("DB_HOST")
 	dbPort := os.Getenv("DB_PORT")
