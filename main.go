@@ -7,6 +7,7 @@ import (
 	"github.com/zakariawahyu/go-gin-jwt-clean/repository"
 	"github.com/zakariawahyu/go-gin-jwt-clean/services"
 	"net/http"
+	"os"
 )
 
 func main() {
@@ -35,5 +36,7 @@ func main() {
 	userController.UserRoutes(v1)
 	taskController.TaskRouters(v1)
 
-	r.Run("localhost:8081")
+	port := os.Getenv("PORT_SERVICES")
+
+	r.Run(port)
 }
