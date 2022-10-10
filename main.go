@@ -36,5 +36,5 @@ func main() {
 	userController.UserRoutes(v1)
 	taskController.TaskRouters(v1)
 
-	r.Run(":" + os.Getenv("PORT_SERVICES"))
+	r.Run(":" + os.Getenv("PORT"))
 }
